@@ -195,19 +195,16 @@ function fastifyJwt (fastify, options, next) {
     }
 
     let token
-    if (request.headers && request.headers.authorization) {
-      const parts = request.headers.authorization.split(' ')
-      if (parts.length === 2) {
-        const scheme = parts[0]
-        token = parts[1]
 
-        if (!/^Bearer$/i.test(scheme)) {
-          return next(new BadRequest(messagesOptions.badRequestErrorMessage))
-        }
-      } else {
-        return next(new BadRequest(messagesOptions.badRequestErrorMessage))
-      }
+    if (request.headers.authorization && request.headers.authorization.split(' ')[0] === 'Bearer') {
+      token = request.headers.authorization.split(' ')[1];
+    } else if (request.query && request.query.token) {
+      token = request.query.token;
     } else {
+      token = request.body.token;
+    }
+
+    if (!token) {
       return next(new Unauthorized(messagesOptions.noAuthorizationInHeaderMessage))
     }
 
